@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Hello World</title>
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+  <!-- Don't use this in production: -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .bg-overlay {
+      background-color: rgba(0,0,0,0.7);
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+  function PromiseModal(props) {
+    const [loading, setLoading] = React.useState(false);
+    const [dialog, setDialog] = React.useState(false);
+    const [feedback, setFeedback] = React.useState("");
+
+    const saveThing = async () => {
+      setLoading(true);
+      setFeedback("");
+      // get some context for the modal
+      const thingContext = {count: 109}
+      const userAction = new Promise((resolve, reject) => {
+        setDialog({resolve, reject, context: thingContext})
+      })
+      try {
+        await userAction;
+      } catch {
+        setLoading(false);
+        setDialog(false);
+        return false;
+      }
+      // make api call here and show feedback
+      setFeedback("Successfully saved!");
+      setLoading(false);
+      setDialog(false);
+    }
+
+    return (<div>
+      <div>{feedback}</div>
+      <button className="p-2 border-solid border-4 border-gray-600" onClick={saveThing}>{loading ? "Saving" : "Open Modal"}</button>
+      {dialog && (
+        <div
+          className="bg-overlay fixed top-0 right-0 left-0 bottom-0 flex items-start justify-center"
+          style={{ zIndex: 10000 }}
+        >
+          <div className="bg-white rounded shadow overflow-hidden mt-32 p-4">
+            <div className="bg-light-gray relative px-6 py-4 text-center">
+              <div>Title</div>
+              <div className="absolute pointer" style={{"top": "1em", "right": "1em"}} onClick={dialog.reject}>x</div>
+            </div>
+            <div className="p-2">
+              Are you sure you want to save {dialog.context.count} things?
+            </div>
+            <div className="text-center">
+              <button className="p-2 border-solid border-4 border-gray-600" onClick={dialog.resolve}>Continue</button>
+            </div>
+            <div className="text-center">
+              <button className="p-2" onClick={dialog.reject}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>)
+  }
+
+  ReactDOM.render(
+    <PromiseModal/>,
+    document.getElementById('root')
+  );
+
+</script>
+</body>
+</html>
